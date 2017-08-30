@@ -1,0 +1,214 @@
+package com.wxeapapp.ui.web
+
+import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.os.Bundle
+import android.view.KeyEvent
+import android.view.View
+import android.widget.LinearLayout
+import com.google.gson.Gson
+import com.just.agentwebX5.AgentWeb
+import com.just.agentwebX5.AgentWebConfig
+import com.nickming.wxeap.utils.applyStatusBarDark
+import com.tencent.smtt.sdk.WebView
+import com.wxeapapp.R
+import com.wxeapapp.api.LoginApi
+import com.wxeapapp.api.request.LoginResponse
+import com.wxeapapp.base.BaseActivity
+import com.wxeapapp.model.PayLoad
+import com.wxeapapp.ui.select.SwitchSystemActivity
+import com.wxeapapp.utils.Constant
+import com.wxeapapp.utils.java.AndroidBug5497Workaround
+import com.wxeapapp.utils.java.GifSizeFilter
+import com.wxeapapp.utils.java.ImageUtil
+import com.wxeapapp.utils.java.SPUtil
+import com.zhihu.matisse.Matisse
+import com.zhihu.matisse.MimeType
+import com.zhihu.matisse.engine.impl.PicassoEngine
+import com.zhihu.matisse.filter.Filter
+import com.zhihu.matisse.internal.entity.CaptureStrategy
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.activity_web.*
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+
+
+class WebActivity : BaseActivity(), IWebActionDelegate {
+
+    companion object {
+        val MODE_INDEX = 0x11
+        val MODE_NORMAL = 0x12
+    }
+
+
+    val REQUEST_CODE_CHOOSE = 0x11
+    var mUrl: String = ""
+    var mMode: Int = MODE_NORMAL
+    var mResponse: LoginResponse? = null
+
+
+    lateinit var mAgentWeb: AgentWeb
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_web)
+        applyStatusBarDark()
+        //源自Stack Overflow解决Android系统bug，全屏模式webview被软键盘遮挡bug
+        AndroidBug5497Workaround.assistActivity(this)
+
+        mMode = intent.getIntExtra(Constant.WEB_MODE, MODE_NORMAL)
+
+
+        if (intent.getStringExtra(Constant.PARAM_URL) != null) {
+            mUrl = intent.getStringExtra(Constant.PARAM_URL)
+        }
+
+        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
+        val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
+        //第一套解决方案
+        AgentWebConfig.syncCookie("cloud.wy800.com", sid)
+        AgentWebConfig.syncCookie("cloud.wy800.com", token)
+        mAgentWeb = AgentWeb.with(this)
+                .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
+                .useDefaultIndicator()// 使用默认进度条
+                .defaultProgressBarColor() // 使用默认进度条颜色
+                .setWebSettings(CustomSetting())
+                .setReceivedTitleCallback({ webView: WebView, s: String ->
+
+                }) //设置 Web 页面的 title 回调
+                .createAgentWeb()//
+                .ready()
+                .go(mUrl)
+        mAgentWeb.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
+
+        if (mMode == MODE_INDEX) {
+            webBackIv.visibility = View.GONE
+        }
+        webBackIv.setOnClickListener {
+            if (!mAgentWeb.back())
+                finish()
+        }
+
+    }
+
+    override fun onResume() {
+        mAgentWeb.webLifeCycle.onResume()
+        super.onResume()
+    }
+
+    override fun onPause() {
+        mAgentWeb.webLifeCycle.onPause()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        mAgentWeb.webLifeCycle.onDestroy()
+        super.onDestroy()
+    }
+
+    override fun onShouldPush(payLoad: PayLoad) {
+        val intent = Intent(this, WebActivity::class.java)
+        intent.putExtra(Constant.PARAM_URL, payLoad.payload!!.url)
+        startActivity(intent)
+    }
+
+    override fun onTitleUpdate(payLoad: PayLoad) {
+        if (payLoad.payload!!.title!!.isNotBlank()) {
+            titleTv.text = payLoad.payload!!.title
+            if (payLoad.payload!!.title.equals("我的") && mResponse?.data!!.size > 1) {
+                val data = PayLoad("showSwitchSystem", null)
+                postMessageToWeb(data)
+            }
+        }
+    }
+
+    fun postMessageToWeb(payLoad: PayLoad) {
+        val message = Gson().toJson(payLoad)
+        mAgentWeb.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
+    }
+
+    override fun onGoBack(payLoad: PayLoad) {
+        mAgentWeb.back()
+    }
+
+    override fun onShowImagePicker(payLoad: PayLoad) {
+
+        Matisse.from(this@WebActivity)
+                .choose(MimeType.of(MimeType.JPEG, MimeType.PNG))
+                .countable(true)
+                .capture(true)
+                .captureStrategy(
+                        CaptureStrategy(true, "com.wxeapapp.fileprovider"))
+                .maxSelectable(1)
+                .addFilter(GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
+                .gridExpectedSize(
+                        getResources().getDimensionPixelSize(R.dimen.grid_expected_size))
+                .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+                .thumbnailScale(0.85f)
+                .imageEngine(PicassoEngine())
+                .forResult(REQUEST_CODE_CHOOSE)
+    }
+
+    override fun onSwitchSystem(payLoad: PayLoad) {
+        val intent = Intent(this, SwitchSystemActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    fun onResponseEvent(loginResponse: LoginResponse): Unit {
+        mResponse = loginResponse
+    }
+
+    override fun onLogout(payLoad: PayLoad) {
+        LoginApi.IMPL.signOut()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (it.result == 0) {
+                        SPUtil.clear(this)
+                        finish()
+                    } else {
+                        toast(it.errmsg)
+                    }
+                }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
+            val selected: List<String> = Matisse.obtainPathResult(data)
+            if (selected.size >= 1) {
+                Observable.create<Boolean> {
+                    val result = ImageUtil.bitmapToString(selected[0])
+                    val item = "data:image/jpeg;base64,$result"
+                    val data = PayLoad("onImagePicked", PayLoad.Item(null, null, null, item))
+                    val message = Gson().toJson(data, PayLoad::class.java)
+                    mAgentWeb.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
+                    it.onNext(true)
+                    it.onComplete()
+                }.subscribeOn(Schedulers.io())
+                        .subscribe {
+
+                        }
+            }
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (mAgentWeb.handleKeyEvent(keyCode, event)) {
+            return true
+        }
+        when (mMode) {
+            MODE_INDEX -> {
+                moveTaskToBack(false)
+                return true
+            }
+            else -> {
+                return super.onKeyDown(keyCode, event)
+            }
+        }
+    }
+}
