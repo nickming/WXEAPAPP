@@ -11,16 +11,18 @@
     android:orientation="vertical"
     tools:context="com.wxeapapp.ui.web.WebActivity">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
-        android:background="@color/white">
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:minHeight="?android:attr/actionBarSize">
 
         <ImageView
             android:id="@+id/webBackIv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="15dp"
             android:background="@drawable/ic_arrow_back_dark_24dp"/>
 
@@ -28,13 +30,12 @@
             android:id="@+id/titleTv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="20dp"
             android:text="正在加载..."
             android:textColor="#000"
-            android:textSize="18sp"/>
+            android:textSize="20sp"/>
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </LinearLayout>

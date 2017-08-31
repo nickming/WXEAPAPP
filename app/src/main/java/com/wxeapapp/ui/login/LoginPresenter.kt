@@ -21,6 +21,7 @@ import okhttp3.RequestBody
  */
 class LoginPresenter(val mView: LoginContract.View) : LoginContract.Presenter {
 
+
     var countDown: CountDownTimer
 
 
@@ -69,8 +70,10 @@ class LoginPresenter(val mView: LoginContract.View) : LoginContract.Presenter {
                                     mView.showDone()
                                     if (it.result == 0) {
                                         L(it.data[0].ArgFullAddress)
+                                        mView.showLoadingCompany()
                                         mView.jumpToWeb(it)
                                     } else {
+                                        mView.hideLoadingCompany()
                                         mView.showToast("登陆失败")
                                     }
                                 }

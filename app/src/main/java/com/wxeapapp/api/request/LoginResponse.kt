@@ -16,5 +16,7 @@ data class LoginResponse(val result: Int,
 
     data class Item(val AemNo: String,
                     val AemName: String,
-                    val ArgFullAddress: String) : Serializable {}
+                    val ArgFullAddress: String,
+                    val RegName: String,
+                    val RegShortName: String) : Serializable {}
 }

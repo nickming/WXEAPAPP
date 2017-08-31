@@ -36,6 +36,10 @@ interface LoginContract {
         fun closeSelf()
 
         fun showSwitchSystem()
+
+        fun showLoadingCompany()
+
+        fun hideLoadingCompany()
     }
 
     interface Presenter : BasePresenter {

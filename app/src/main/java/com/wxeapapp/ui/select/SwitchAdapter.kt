@@ -31,7 +31,7 @@ class SwitchAdapter(val mItems: ArrayList<LoginResponse.Item>, val selected: Int
     }
 
     override fun onBindViewHolder(holder: SelectionHolder, position: Int) {
-        holder.mTextView.text = mItems[position].AemName
+        holder.mTextView.text = mItems[position].RegShortName
         holder.mTextView.setTextColor(Color.parseColor("#000000"))
 //        if (selected == position) {
 //            holder.mTextView.setTextColor(Color.parseColor("#7ff000"))

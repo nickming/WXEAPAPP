@@ -1,8 +1,13 @@
 package com.wxeapapp.ui.login
 
+import android.animation.Animator
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
@@ -11,7 +16,7 @@ import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.View
-import com.nickming.wxeap.utils.applyStatusBarDark
+import com.nickming.wxeap.utils.applyStatusBar
 import com.tencent.android.tpush.XGPushConfig
 import com.wxeapapp.R
 import com.wxeapapp.api.request.LoginResponse
@@ -29,10 +34,6 @@ import kotlinx.android.synthetic.main.activity_login.*
 import org.greenrobot.eventbus.EventBus
 
 class LoginActivity : BaseActivity(), LoginContract.View {
-    override fun showSwitchSystem() {
-        startActivity(Intent(this, SwitchSystemActivity::class.java))
-        finish()
-    }
 
 
     var mPresenter: LoginPresenter = LoginPresenter(this)
@@ -43,7 +44,14 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        applyStatusBarDark()
+        applyStatusBar(Color.parseColor("#000000"),0.3f)
+
+        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
+        val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
+        if (sid.isNotBlank() && token.isNotBlank()) {
+            transitionRoot.visibility = View.VISIBLE
+            KeyboardUtil.hideSoftInput(this)
+        }
         requestAllPermission()
         initViews()
     }
@@ -92,6 +100,14 @@ class LoginActivity : BaseActivity(), LoginContract.View {
             showHelpDialog()
         })
 
+
+        loginRootRl.setOnTouchListener { view, motionEvent ->
+            view.isFocusable = true
+            view.isFocusableInTouchMode = true
+            view.requestFocus()
+            KeyboardUtil.hideSoftInput(this@LoginActivity)
+            false
+        }
 
         initMobileEt()
         initVerifyCodeEt()
@@ -222,23 +238,30 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     }
 
     override fun jumpToWeb(loginResponse: LoginResponse) {
+        EventBus.getDefault().postSticky(loginResponse)
         val addressUrl = SPUtil.get(this, SPUtil.SWITCH_SYSTEM_TYPE_URL, "") as String
         if (addressUrl.isBlank() && loginResponse.data.size > 1) {
             showSwitchSystem()
         } else {
             var baseUrl: String = ""
-            if (loginResponse.data.size == 1)
+            if (loginResponse!!.data.size == 1) {
+                SPUtil.put(this, SPUtil.COMPANY_NAME, loginResponse.data[0].RegShortName)
                 baseUrl = loginResponse.data[0].ArgFullAddress
-            else if (addressUrl.isNotBlank()) {
+            } else if (addressUrl.isNotBlank()) {
                 baseUrl = addressUrl
             }
-            var intent = Intent(this, WebActivity::class.java)
-            intent.putExtra(Constant.PARAM_URL, baseUrl + Constant.DEFAULT_URL)
-            intent.putExtra(Constant.WEB_MODE, WebActivity.MODE_INDEX)
-            EventBus.getDefault().postSticky(loginResponse)
-            startActivity(intent)
-            finish()
+            val name = SPUtil.get(this, SPUtil.COMPANY_NAME, "") as String
+            showLoadingAnimation(name, baseUrl)
+
         }
+    }
+
+    private fun openWebActivity(baseUrl: String) {
+        var intent = Intent(this, WebActivity::class.java)
+        intent.putExtra(Constant.PARAM_URL, baseUrl + Constant.DEFAULT_URL)
+        intent.putExtra(Constant.WEB_MODE, WebActivity.MODE_INDEX)
+        startActivity(intent)
+        finish()
     }
 
     override fun showLoginEnable(enable: Boolean) {
@@ -250,6 +273,48 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     }
 
     override fun closeSelf() {
+        finish()
+    }
+
+    fun showLoadingAnimation(text: String, url: String) {
+        companyNameTv.text = text
+        val fadeAnimation = ObjectAnimator.ofFloat(companyNameTv, "alpha", 1.0f, 0f)
+        val scaleToZeroAnimation = ValueAnimator.ofFloat(25f, 0f)
+        scaleToZeroAnimation.addUpdateListener {
+            companyNameTv.textSize = it!!.animatedValue as Float
+        }
+        val animatorSet = AnimatorSet()
+        animatorSet.play(scaleToZeroAnimation).with(fadeAnimation)
+        animatorSet.duration = 2000
+        animatorSet.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationRepeat(p0: Animator?) {
+            }
+
+            override fun onAnimationCancel(p0: Animator?) {
+
+            }
+
+            override fun onAnimationStart(p0: Animator?) {
+            }
+
+            override fun onAnimationEnd(p0: Animator?) {
+                openWebActivity(url)
+            }
+
+        })
+        animatorSet.start()
+    }
+
+    override fun hideLoadingCompany() {
+        transitionRoot.visibility = View.GONE
+    }
+
+    override fun showLoadingCompany() {
+        transitionRoot.visibility = View.VISIBLE
+    }
+
+    override fun showSwitchSystem() {
+        startActivity(Intent(this, SwitchSystemActivity::class.java))
         finish()
     }
 

@@ -1,21 +1,24 @@
 package com.wxeapapp.ui.web
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.Color
 import android.os.Bundle
-import android.view.KeyEvent
+import android.support.v7.app.AlertDialog
 import android.view.View
 import android.widget.LinearLayout
 import com.google.gson.Gson
 import com.just.agentwebX5.AgentWeb
 import com.just.agentwebX5.AgentWebConfig
-import com.nickming.wxeap.utils.applyStatusBarDark
+import com.nickming.wxeap.utils.applyStatusBar
 import com.tencent.smtt.sdk.WebView
 import com.wxeapapp.R
 import com.wxeapapp.api.LoginApi
 import com.wxeapapp.api.request.LoginResponse
 import com.wxeapapp.base.BaseActivity
 import com.wxeapapp.model.PayLoad
+import com.wxeapapp.ui.login.LoginActivity
 import com.wxeapapp.ui.select.SwitchSystemActivity
 import com.wxeapapp.utils.Constant
 import com.wxeapapp.utils.java.AndroidBug5497Workaround
@@ -54,7 +57,8 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
-        applyStatusBarDark()
+        applyStatusBar(Color.parseColor("#000000"), 0.3f)
+
         //源自Stack Overflow解决Android系统bug，全屏模式webview被软键盘遮挡bug
         AndroidBug5497Workaround.assistActivity(this)
 
@@ -92,6 +96,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         }
 
     }
+
 
     override fun onResume() {
         mAgentWeb.webLifeCycle.onResume()
@@ -154,7 +159,6 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
     override fun onSwitchSystem(payLoad: PayLoad) {
         val intent = Intent(this, SwitchSystemActivity::class.java)
         startActivity(intent)
-        finish()
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -162,18 +166,34 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         mResponse = loginResponse
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onCloseEvent(closeEvent: CloseEvent) {
+        finish()
+    }
+
     override fun onLogout(payLoad: PayLoad) {
-        LoginApi.IMPL.signOut()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    if (it.result == 0) {
-                        SPUtil.clear(this)
-                        finish()
-                    } else {
-                        toast(it.errmsg)
-                    }
-                }
+        val exitDialog = AlertDialog.Builder(this)
+                .setTitle("退出登录")
+                .setMessage("真的要退出登录吗?")
+                .setPositiveButton("确定", { dialogInterface: DialogInterface, i: Int ->
+                    LoginApi.IMPL.signOut()
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe {
+                                if (it.result == 0) {
+                                    SPUtil.clear(this)
+                                    startActivity(Intent(this@WebActivity, LoginActivity::class.java))
+                                    finish()
+                                } else {
+                                    toast(it.errmsg)
+                                }
+                            }
+                })
+                .setNegativeButton("取消", { dialogInterface, i ->
+                    dialogInterface.dismiss()
+                })
+                .create()
+        exitDialog.show()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -197,18 +217,17 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (mAgentWeb.handleKeyEvent(keyCode, event)) {
-            return true
-        }
-        when (mMode) {
-            MODE_INDEX -> {
-                moveTaskToBack(false)
-                return true
-            }
-            else -> {
-                return super.onKeyDown(keyCode, event)
+    override fun onBackPressed() {
+        if (!mAgentWeb.back()) {
+            when (mMode) {
+                MODE_INDEX -> {
+                    moveTaskToBack(false)
+                }
+                else -> {
+                    finish()
+                }
             }
         }
     }
+
 }
