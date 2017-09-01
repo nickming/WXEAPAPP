@@ -21,6 +21,7 @@ import com.wxeapapp.model.PayLoad
 import com.wxeapapp.ui.login.LoginActivity
 import com.wxeapapp.ui.select.SwitchSystemActivity
 import com.wxeapapp.utils.Constant
+import com.wxeapapp.utils.L
 import com.wxeapapp.utils.java.AndroidBug5497Workaround
 import com.wxeapapp.utils.java.GifSizeFilter
 import com.wxeapapp.utils.java.ImageUtil
@@ -72,8 +73,14 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
         //第一套解决方案
-        AgentWebConfig.syncCookie("cloud.wy800.com", sid)
-        AgentWebConfig.syncCookie("cloud.wy800.com", token)
+        L(sid, "handle")
+        L(token, "handle")
+        try {
+            AgentWebConfig.syncCookie("cloud.wy800.com", token)
+            AgentWebConfig.syncCookie("cloud.wy800.com", sid)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         mAgentWeb = AgentWeb.with(this)
                 .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
                 .useDefaultIndicator()// 使用默认进度条
@@ -203,6 +210,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
             if (selected.size >= 1) {
                 Observable.create<Boolean> {
                     val result = ImageUtil.bitmapToString(selected[0])
+                    L(result.substring(result.length - 10))
                     val item = "data:image/jpeg;base64,$result"
                     val data = PayLoad("onImagePicked", PayLoad.Item(null, null, null, item))
                     val message = Gson().toJson(data, PayLoad::class.java)

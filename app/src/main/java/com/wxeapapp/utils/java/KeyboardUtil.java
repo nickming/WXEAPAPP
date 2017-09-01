@@ -18,7 +18,7 @@ import android.widget.EditText;
 
 public class KeyboardUtil {
 
-    private KeyboardUtil(){
+    private KeyboardUtil() {
 
     }
 
@@ -38,7 +38,7 @@ public class KeyboardUtil {
         if (view != null) {
             InputMethodManager inputmanger = (InputMethodManager) activity
                     .getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputmanger.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            inputmanger.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
 

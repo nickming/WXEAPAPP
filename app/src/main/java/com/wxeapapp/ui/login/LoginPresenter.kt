@@ -6,6 +6,7 @@ import com.wxeapapp.EAPApplication
 import com.wxeapapp.api.LoginApi
 import com.wxeapapp.utils.L
 import com.wxeapapp.utils.java.NetWorkUtil
+import com.wxeapapp.utils.java.SPUtil
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -75,6 +76,7 @@ class LoginPresenter(val mView: LoginContract.View) : LoginContract.Presenter {
                                     } else {
                                         mView.hideLoadingCompany()
                                         mView.showToast("登陆失败")
+                                        SPUtil.clear(EAPApplication.instance)
                                     }
                                 }
                     } else {
