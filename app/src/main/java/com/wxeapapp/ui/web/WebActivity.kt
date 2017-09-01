@@ -35,6 +35,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_web.*
+import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
@@ -189,6 +190,8 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                             .subscribe {
                                 if (it.result == 0) {
                                     SPUtil.clear(this)
+                                    mAgentWeb.clearWebCache()
+                                    EventBus.getDefault().removeStickyEvent(LoginResponse::class.java)
                                     startActivity(Intent(this@WebActivity, LoginActivity::class.java))
                                     finish()
                                 } else {
