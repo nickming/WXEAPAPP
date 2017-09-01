@@ -1,9 +1,5 @@
 package com.wxeapapp.ui.login
 
-import android.animation.Animator
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -44,7 +40,7 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        applyStatusBar(Color.parseColor("#000000"),0.3f)
+        applyStatusBar(Color.parseColor("#000000"), 0.3f)
 
         val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
@@ -278,31 +274,34 @@ class LoginActivity : BaseActivity(), LoginContract.View {
 
     fun showLoadingAnimation(text: String, url: String) {
         companyNameTv.text = text
-        val fadeAnimation = ObjectAnimator.ofFloat(companyNameTv, "alpha", 1.0f, 0f)
-        val scaleToZeroAnimation = ValueAnimator.ofFloat(25f, 0f)
-        scaleToZeroAnimation.addUpdateListener {
-            companyNameTv.textSize = it!!.animatedValue as Float
-        }
-        val animatorSet = AnimatorSet()
-        animatorSet.play(scaleToZeroAnimation).with(fadeAnimation)
-        animatorSet.duration = 2000
-        animatorSet.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationRepeat(p0: Animator?) {
-            }
-
-            override fun onAnimationCancel(p0: Animator?) {
-
-            }
-
-            override fun onAnimationStart(p0: Animator?) {
-            }
-
-            override fun onAnimationEnd(p0: Animator?) {
-                openWebActivity(url)
-            }
-
-        })
-        animatorSet.start()
+        companyNameTv.postDelayed({
+            openWebActivity(url)
+        }, 2000)
+//        val fadeAnimation = ObjectAnimator.ofFloat(companyNameTv, "alpha", 1.0f, 0f)
+//        val scaleToZeroAnimation = ValueAnimator.ofFloat(25f, 0f)
+//        scaleToZeroAnimation.addUpdateListener {
+//            companyNameTv.textSize = it!!.animatedValue as Float
+//        }
+//        val animatorSet = AnimatorSet()
+//        animatorSet.play(scaleToZeroAnimation).with(fadeAnimation)
+//        animatorSet.duration = 2000
+//        animatorSet.addListener(object : Animator.AnimatorListener {
+//            override fun onAnimationRepeat(p0: Animator?) {
+//            }
+//
+//            override fun onAnimationCancel(p0: Animator?) {
+//
+//            }
+//
+//            override fun onAnimationStart(p0: Animator?) {
+//            }
+//
+//            override fun onAnimationEnd(p0: Animator?) {
+//                openWebActivity(url)
+//            }
+//
+//        })
+//        animatorSet.start()
     }
 
     override fun hideLoadingCompany() {

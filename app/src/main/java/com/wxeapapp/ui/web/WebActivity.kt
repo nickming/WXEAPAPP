@@ -81,14 +81,27 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        mAgentWeb = AgentWeb.with(this)
-                .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
-                .useDefaultIndicator()// 使用默认进度条
-                .defaultProgressBarColor() // 使用默认进度条颜色
-                .setAgentWebSettings(CustomSetting())
-                .createAgentWeb()//
-                .ready()
-                .go(mUrl)
+
+        if (mMode == MODE_INDEX) {
+            mAgentWeb = AgentWeb.with(this)
+                    .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
+                    .closeProgressBar()
+                    .setAgentWebSettings(CustomSetting())
+                    .createAgentWeb()//
+                    .ready()
+                    .go(mUrl)
+        } else {
+            mAgentWeb = AgentWeb.with(this)
+                    .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
+                    .useDefaultIndicator()// 使用默认进度条
+                    .defaultProgressBarColor() // 使用默认进度条颜色
+                    .setAgentWebSettings(CustomSetting())
+                    .createAgentWeb()//
+                    .ready()
+                    .go(mUrl)
+        }
+
+
         mAgentWeb.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
 
         if (mMode == MODE_INDEX) {
