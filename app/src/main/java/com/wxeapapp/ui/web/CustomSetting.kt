@@ -1,9 +1,9 @@
 package com.wxeapapp.ui.web
 
 import android.os.Build
-import android.support.annotation.RequiresApi
-import com.just.agentwebX5.WebDefaultSettingsManager
-import com.tencent.smtt.sdk.WebView
+import android.webkit.WebView
+import com.just.library.AgentWebSettings
+import com.just.library.WebDefaultSettingsManager
 
 /**
  * class description here
@@ -14,14 +14,30 @@ import com.tencent.smtt.sdk.WebView
  */
 class CustomSetting : WebDefaultSettingsManager() {
 
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
-    override fun toSetting(webView: WebView): com.just.agentwebX5.WebSettings<*>? {
+    override fun toSetting(webView: WebView?): AgentWebSettings<*> {
         super.toSetting(webView)
-        getWebSettings().setUserAgent(getWebSettings().userAgentString + " wxeap-app/1.0")
-        getWebSettings().setBlockNetworkImage(false)//是否阻塞加载网络图片  协议http or https
-        getWebSettings().setAllowFileAccess(false) //允许加载本地文件html  file协议, 这可能会造成不安全 , 建议重写关闭
-        getWebSettings().setAllowFileAccessFromFileURLs(false) //通过 file url 加载的 Javascript 读取其他的本地文件 .建议关闭
-        getWebSettings().setAllowUniversalAccessFromFileURLs(false)//允许通过 file url 加载的 Javascript 可以访问其他的源，包括其他的文件和 http，https 等其他的源
+        webSettings.userAgentString = webSettings.userAgentString + " wxeap-app/1.0"
+//        getWebSettings().setUserAgent(getWebSettings().userAgentString + " wxeap-app/1.0")
+        webSettings.blockNetworkImage = false//是否阻塞加载网络图片  协议http or https
+        webSettings.allowFileAccess = false //允许加载本地文件html  file协议, 这可能会造成不安全 , 建议重写关闭
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            webSettings.allowFileAccessFromFileURLs = false
+        } //通过 file url 加载的 Javascript 读取其他的本地文件 .建议关闭
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            webSettings.allowUniversalAccessFromFileURLs = false
+        }//允许通过 file url 加载的 Javascript 可以访问其他的源，包括其他的文件和 http，https 等其他的源
         return this
     }
+
+//    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
+//    override fun toSetting(webView: WebView): WebSettings<*>? {
+//        super.toSetting(webView)
+//        webSettings.userAgentString = webSettings.userAgentString + " wxeap-app/1.0"
+////        getWebSettings().setUserAgent(getWebSettings().userAgentString + " wxeap-app/1.0")
+//        webSettings.blockNetworkImage = false//是否阻塞加载网络图片  协议http or https
+//        webSettings.allowFileAccess = false //允许加载本地文件html  file协议, 这可能会造成不安全 , 建议重写关闭
+//        webSettings.allowFileAccessFromFileURLs = false //通过 file url 加载的 Javascript 读取其他的本地文件 .建议关闭
+//        webSettings.allowUniversalAccessFromFileURLs = false//允许通过 file url 加载的 Javascript 可以访问其他的源，包括其他的文件和 http，https 等其他的源
+//        return this
+//    }
 }

@@ -9,10 +9,9 @@ import android.support.v7.app.AlertDialog
 import android.view.View
 import android.widget.LinearLayout
 import com.google.gson.Gson
-import com.just.agentwebX5.AgentWeb
-import com.just.agentwebX5.AgentWebConfig
+import com.just.library.AgentWeb
+import com.just.library.AgentWebConfig
 import com.nickming.wxeap.utils.applyStatusBar
-import com.tencent.smtt.sdk.WebView
 import com.wxeapapp.R
 import com.wxeapapp.api.LoginApi
 import com.wxeapapp.api.request.LoginResponse
@@ -85,10 +84,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                 .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
                 .useDefaultIndicator()// 使用默认进度条
                 .defaultProgressBarColor() // 使用默认进度条颜色
-                .setWebSettings(CustomSetting())
-                .setReceivedTitleCallback({ webView: WebView, s: String ->
-
-                }) //设置 Web 页面的 title 回调
+                .setAgentWebSettings(CustomSetting())
                 .createAgentWeb()//
                 .ready()
                 .go(mUrl)
