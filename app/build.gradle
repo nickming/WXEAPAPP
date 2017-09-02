@@ -8,7 +8,7 @@ android {
     buildToolsVersion "26.0.0"
     defaultConfig {
         applicationId "com.wxeapapp"
-        minSdkVersion 14
+        minSdkVersion 19
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -68,12 +68,11 @@ dependencies {
     })
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     //rx系列
-    compile "com.android.support:design:$support_version"
     compile "io.reactivex.rxjava2:rxjava:$rxJava_version"
     compile "io.reactivex.rxjava2:rxkotlin:$rxKotlin_version"
     compile "io.reactivex.rxjava2:rxandroid:$rxAndroid_version"
     compile "com.jakewharton.rxbinding2:rxbinding:$rxBinding_version"
-    compile "com.jakewharton.rxbinding2:rxbinding-support-v4:$rxBinding_version"
+//    compile "com.jakewharton.rxbinding2:rxbinding-support-v4:$rxBinding_version"
     compile "com.jakewharton.rxbinding2:rxbinding-appcompat-v7:$rxBinding_version"
     //retrofit & okHttp
     compile "com.squareup.retrofit2:retrofit:$retrofit2_version"
@@ -92,10 +91,12 @@ dependencies {
     compile 'com.tencent.sonic:sdk:1.0.0'
     compile 'com.tencent.xinge:xinge:3.1.6-alpha'
     compile 'com.tencent.mid:mid:3.72.4-alpha'
-    compile 'com.just.agentwebX5:agentwebX5:1.0.0'
+//    compile 'com.just.agentwebX5:agentwebX5:1.0.0'
+    compile 'com.just.agentweb:agentweb:2.0.0'
     compile 'com.zhihu.android:matisse:0.5.0-alpha4'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'br.com.simplepass:loading-button-android:1.8.0'
     compile 'org.greenrobot:eventbus:3.0.0'
+    compile 'me.imid.swipebacklayout.lib:library:1.0.0'
     testCompile 'junit:junit:4.12'
 }

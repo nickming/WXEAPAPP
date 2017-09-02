@@ -3,16 +3,13 @@ package com.wxeapapp.ui.web
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.view.View
 import android.widget.LinearLayout
 import com.google.gson.Gson
-import com.just.agentwebX5.AgentWeb
-import com.just.agentwebX5.AgentWebConfig
-import com.nickming.wxeap.utils.applyStatusBar
-import com.tencent.smtt.sdk.WebView
+import com.just.library.AgentWeb
+import com.just.library.AgentWebConfig
 import com.wxeapapp.R
 import com.wxeapapp.api.LoginApi
 import com.wxeapapp.api.request.LoginResponse
@@ -58,12 +55,30 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        getWindow().getDecorView().setSystemUiVisibility(
+//                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+//                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
         setContentView(R.layout.activity_web)
-        applyStatusBar(Color.parseColor("#000000"), 0.3f)
-
         //源自Stack Overflow解决Android系统bug，全屏模式webview被软键盘遮挡bug
-        AndroidBug5497Workaround.assistActivity(this)
+        AndroidBug5497Workaround.assistActivity(findViewById(android.R.id.content))
 
+        try {
+            initViews()
+        } catch (e: Exception) {
+            //如果报错则让应用重启
+            val intent = baseContext.packageManager.getLaunchIntentForPackage(packageName)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+        }
+
+
+    }
+
+    private fun initViews() {
         mMode = intent.getIntExtra(Constant.WEB_MODE, MODE_NORMAL)
 
 
@@ -82,17 +97,29 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        mAgentWeb = AgentWeb.with(this)
-                .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
-                .useDefaultIndicator()// 使用默认进度条
-                .defaultProgressBarColor() // 使用默认进度条颜色
-                .setWebSettings(CustomSetting())
-                .setReceivedTitleCallback({ webView: WebView, s: String ->
 
-                }) //设置 Web 页面的 title 回调
-                .createAgentWeb()//
-                .ready()
-                .go(mUrl)
+        if (mMode == MODE_INDEX) {
+            swipeBackLayout.setEnableGesture(false)
+            mAgentWeb = AgentWeb.with(this)
+                    .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
+                    .closeProgressBar()
+                    .setAgentWebSettings(CustomSetting())
+                    .createAgentWeb()//
+                    .ready()
+                    .go(mUrl)
+        } else {
+            swipeBackLayout.setEnableGesture(true)
+            mAgentWeb = AgentWeb.with(this)
+                    .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
+                    .useDefaultIndicator()// 使用默认进度条
+                    .defaultProgressBarColor() // 使用默认进度条颜色
+                    .setAgentWebSettings(CustomSetting())
+                    .createAgentWeb()//
+                    .ready()
+                    .go(mUrl)
+        }
+
+
         mAgentWeb.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
 
         if (mMode == MODE_INDEX) {
@@ -102,7 +129,6 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
             if (!mAgentWeb.back())
                 finish()
         }
-
     }
 
 

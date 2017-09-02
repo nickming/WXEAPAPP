@@ -1,11 +1,9 @@
 package com.wxeapapp.ui.select
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.view.View
-import com.nickming.wxeap.utils.applyStatusBar
 import com.wxeapapp.R
 import com.wxeapapp.api.request.LoginResponse
 import com.wxeapapp.base.BaseActivity
@@ -24,7 +22,8 @@ class SwitchSystemActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_selection)
-        applyStatusBar(Color.parseColor("#000000"), 0.3f)
+//        applyStatusBar(Color.parseColor("#000000"), 0.3f)
+        swipeBackLayout.setEnableGesture(false)
         back.setOnClickListener { finish() }
     }
 
