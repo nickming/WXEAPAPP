@@ -7,8 +7,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ffff"
-    android:contentDescription="status_padding"
     android:orientation="vertical"
+    android:fitsSystemWindows="true"
     tools:context="com.wxeapapp.ui.web.WebActivity">
 
     <LinearLayout
