@@ -3,7 +3,6 @@ package com.wxeapapp.ui.login
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
@@ -12,7 +11,6 @@ import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.View
-import com.nickming.wxeap.utils.applyStatusBar
 import com.tencent.android.tpush.XGPushConfig
 import com.wxeapapp.R
 import com.wxeapapp.api.request.LoginResponse
@@ -40,8 +38,8 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-        applyStatusBar(Color.parseColor("#000000"), 0.3f)
-
+//        applyStatusBar(Color.parseColor("#000000"), 0.3f)
+        swipeBackLayout.setEnableGesture(false)
         val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
         if (sid.isNotBlank() && token.isNotBlank()) {

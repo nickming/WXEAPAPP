@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:contentDescription="status_padding">
+    android:fitsSystemWindows="true">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/loginRootRl"

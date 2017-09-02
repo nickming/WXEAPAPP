@@ -1,8 +1,9 @@
 package com.wxeapapp.base
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
+import me.imid.swipebacklayout.lib.SwipeBackLayout
+import me.imid.swipebacklayout.lib.app.SwipeBackActivity
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -18,11 +19,12 @@ import org.greenrobot.eventbus.ThreadMode
  * * Copyright (c) 2017 nickming All right reserved.
  */
 
-open class BaseActivity : AppCompatActivity() {
+open class BaseActivity : SwipeBackActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        swipeBackLayout.setEdgeTrackingEnabled(SwipeBackLayout.EDGE_LEFT)
     }
 
     override fun onStart() {

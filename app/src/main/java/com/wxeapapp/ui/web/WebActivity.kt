@@ -66,6 +66,19 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         //源自Stack Overflow解决Android系统bug，全屏模式webview被软键盘遮挡bug
         AndroidBug5497Workaround.assistActivity(findViewById(android.R.id.content))
 
+        try {
+            initViews()
+        } catch (e: Exception) {
+            //如果报错则让应用重启
+            val intent = baseContext.packageManager.getLaunchIntentForPackage(packageName)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+        }
+
+
+    }
+
+    private fun initViews() {
         mMode = intent.getIntExtra(Constant.WEB_MODE, MODE_NORMAL)
 
 
@@ -86,6 +99,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         }
 
         if (mMode == MODE_INDEX) {
+            swipeBackLayout.setEnableGesture(false)
             mAgentWeb = AgentWeb.with(this)
                     .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
                     .closeProgressBar()
@@ -94,6 +108,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                     .ready()
                     .go(mUrl)
         } else {
+            swipeBackLayout.setEnableGesture(true)
             mAgentWeb = AgentWeb.with(this)
                     .setAgentWebParent(webContainer, LinearLayout.LayoutParams(-1, -1))
                     .useDefaultIndicator()// 使用默认进度条
@@ -114,7 +129,6 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
             if (!mAgentWeb.back())
                 finish()
         }
-
     }
 
 
