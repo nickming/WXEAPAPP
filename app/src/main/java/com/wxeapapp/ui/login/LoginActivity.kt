@@ -95,7 +95,7 @@ class LoginActivity : BaseActivity(), LoginContract.View {
         })
 
 
-        loginRootRl.setOnTouchListener { view, motionEvent ->
+        loginRootLl.setOnTouchListener { view, motionEvent ->
             view.isFocusable = true
             view.isFocusableInTouchMode = true
             view.requestFocus()

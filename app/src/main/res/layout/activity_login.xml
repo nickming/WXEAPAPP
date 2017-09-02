@@ -7,33 +7,29 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/loginRootRl"
+    <LinearLayout
+        android:id="@+id/loginRootLl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         tools:context=".ui.login.LoginActivity">
 
         <ImageView
+            android:background="@mipmap/ic_launcher"
             android:id="@+id/imageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="54dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@mipmap/ic_launcher"/>
+            android:layout_gravity="center"
+            android:layout_marginTop="80dp"/>
 
         <RelativeLayout
             android:id="@+id/loginContainer"
             android:layout_width="326dp"
             android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="44dp"
             android:focusable="true"
-            android:focusableInTouchMode="true"
-            app:layout_constraintHorizontal_bias="0.465"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView">
+            android:focusableInTouchMode="true">
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -70,10 +66,8 @@
             android:id="@+id/verifyContainer"
             android:layout_width="326dp"
             android:layout_height="50dp"
-            android:layout_marginTop="24dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/loginContainer">
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp">
 
             <EditText
                 android:id="@+id/verifyCodeEt"
@@ -93,33 +87,32 @@
             android:id="@+id/loginBtn"
             android:layout_width="326dp"
             android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="24dp"
             android:background="@drawable/btn_login_bg"
             android:text="登录"
             android:textColor="@color/white"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/verifyContainer"
             app:spinning_bar_color="#fff"
             app:spinning_bar_padding="6dp"
             app:spinning_bar_width="4dp"/>
 
-        <TextView
-            android:id="@+id/needHelpTv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/login_need_help"
-            android:textColor="@color/blue_dark"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHorizontal_bias="0.501"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/loginBtn"
-            app:layout_constraintVertical_bias="1.0"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    </android.support.constraint.ConstraintLayout>
+            <TextView
+                android:id="@+id/needHelpTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="16dp"
+                android:text="@string/login_need_help"
+                android:textColor="@color/blue_dark"/>
+        </RelativeLayout>
+
+
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/transitionRoot"
