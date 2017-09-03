@@ -3,13 +3,14 @@ package com.wxeapapp.ui.web
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.view.View
+import android.webkit.CookieManager
 import android.widget.LinearLayout
 import com.google.gson.Gson
 import com.just.library.AgentWeb
-import com.just.library.AgentWebConfig
 import com.wxeapapp.R
 import com.wxeapapp.api.LoginApi
 import com.wxeapapp.api.request.LoginResponse
@@ -19,6 +20,7 @@ import com.wxeapapp.ui.login.LoginActivity
 import com.wxeapapp.ui.select.SwitchSystemActivity
 import com.wxeapapp.utils.Constant
 import com.wxeapapp.utils.L
+import com.wxeapapp.utils.cookies.CookieHelper
 import com.wxeapapp.utils.java.AndroidBug5497Workaround
 import com.wxeapapp.utils.java.GifSizeFilter
 import com.wxeapapp.utils.java.ImageUtil
@@ -88,12 +90,14 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
 
         val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
+        val cookies = arrayListOf(token, sid)
         //第一套解决方案
         L(sid, "handle")
         L(token, "handle")
         try {
-            AgentWebConfig.syncCookie("cloud.wy800.com", token)
-            AgentWebConfig.syncCookie("cloud.wy800.com", sid)
+            CookieHelper.setCookie("cloud.wy800.com", cookies, this)
+//            AgentWebConfig.syncCookie("cloud.wy800.com", token)
+//            AgentWebConfig.syncCookie("cloud.wy800.com", sid)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -118,8 +122,9 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                     .ready()
                     .go(mUrl)
         }
-
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            CookieManager.getInstance().setAcceptThirdPartyCookies(mAgentWeb.webCreator.get(), true)
+        }
         mAgentWeb.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
 
         if (mMode == MODE_INDEX) {

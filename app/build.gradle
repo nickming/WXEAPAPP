@@ -99,4 +99,5 @@ dependencies {
     compile 'org.greenrobot:eventbus:3.0.0'
     compile 'me.imid.swipebacklayout.lib:library:1.0.0'
     testCompile 'junit:junit:4.12'
+
 }

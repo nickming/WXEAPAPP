@@ -1,7 +1,6 @@
 package com.wxeapapp
 
 import android.app.Application
-import com.tencent.smtt.sdk.QbSdk
 import com.wxeapapp.api.ApiUtils
 import com.wxeapapp.utils.L
 import com.wxeapapp.utils.push.XgPushUtils
@@ -26,7 +25,6 @@ class EAPApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         ApiUtils.init(this)
-        QbSdk.initX5Environment(this, null)
         XgPushUtils.init(this, true)
         XgPushUtils.registerPushBindAccount(this, {
             token ->

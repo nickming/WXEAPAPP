@@ -27,6 +27,7 @@ object ApiUtils {
             this.addInterceptor(HttpLoggingInterceptor().apply { this.level = HttpLoggingInterceptor.Level.BODY })
             this.addInterceptor(com.wxeapapp.utils.cookies.WriteCookieInterceptor(com.wxeapapp.api.ApiUtils.context))
             this.addInterceptor(com.wxeapapp.utils.cookies.SaveCookieInterceptor(com.wxeapapp.api.ApiUtils.context))
+            this.connectTimeout(3000, java.util.concurrent.TimeUnit.SECONDS)
         }
         Retrofit.Builder()
                 .baseUrl("https://cloud.wy800.com/")
