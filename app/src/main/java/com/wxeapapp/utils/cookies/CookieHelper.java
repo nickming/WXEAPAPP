@@ -19,13 +19,15 @@ import java.util.List;
 
 public class CookieHelper {
 
-    public static void setCookie(String url,List<String> cookies, Context context){
+    public static void setCookie(boolean index, String url, List<String> cookies, Context context) {
         CookieSyncManager.createInstance(context);
-        CookieManager cookieManager=CookieManager.getInstance();
-        cookieManager.removeAllCookie();
+        CookieManager cookieManager = CookieManager.getInstance();
+        if (index){
+            cookieManager.removeAllCookie();
+        }
         cookieManager.setAcceptCookie(true);
-        for (String cookie: cookies){
-            cookieManager.setCookie(url,cookie);
+        for (String cookie : cookies) {
+            cookieManager.setCookie(url, cookie);
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             CookieSyncManager.getInstance().sync();

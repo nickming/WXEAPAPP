@@ -3,11 +3,9 @@ package com.wxeapapp.ui.web
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.view.View
-import android.webkit.CookieManager
 import android.widget.LinearLayout
 import com.google.gson.Gson
 import com.just.library.AgentWeb
@@ -95,7 +93,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         L(sid, "handle")
         L(token, "handle")
         try {
-            CookieHelper.setCookie("cloud.wy800.com", cookies, this)
+            CookieHelper.setCookie(mMode== MODE_INDEX,"cloud.wy800.com", cookies, this)
 //            AgentWebConfig.syncCookie("cloud.wy800.com", token)
 //            AgentWebConfig.syncCookie("cloud.wy800.com", sid)
         } catch (e: Exception) {
@@ -122,9 +120,9 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                     .ready()
                     .go(mUrl)
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            CookieManager.getInstance().setAcceptThirdPartyCookies(mAgentWeb.webCreator.get(), true)
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            CookieManager.getInstance().setAcceptThirdPartyCookies(mAgentWeb.webCreator.get(), true)
+//        }
         mAgentWeb.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
 
         if (mMode == MODE_INDEX) {
