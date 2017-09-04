@@ -100,5 +100,4 @@ dependencies {
     compile 'me.imid.swipebacklayout.lib:library:1.0.0'
     testCompile 'junit:junit:4.12'
     compile 'com.aliyun.ams:alicloud-android-hotfix:3.1.1'
-
 }

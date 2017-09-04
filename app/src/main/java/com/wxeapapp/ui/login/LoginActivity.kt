@@ -1,6 +1,8 @@
 package com.wxeapapp.ui.login
 
 import android.app.Dialog
+import android.app.NotificationManager
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -38,7 +40,6 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-//        applyStatusBar(Color.parseColor("#000000"), 0.3f)
         swipeBackLayout.setEnableGesture(false)
         val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
@@ -48,6 +49,12 @@ class LoginActivity : BaseActivity(), LoginContract.View {
         }
         requestAllPermission()
         initViews()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val notifyManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notifyManager.cancelAll()
     }
 
     override fun autoLogin() {
@@ -275,31 +282,6 @@ class LoginActivity : BaseActivity(), LoginContract.View {
         companyNameTv.postDelayed({
             openWebActivity(url)
         }, 2000)
-//        val fadeAnimation = ObjectAnimator.ofFloat(companyNameTv, "alpha", 1.0f, 0f)
-//        val scaleToZeroAnimation = ValueAnimator.ofFloat(25f, 0f)
-//        scaleToZeroAnimation.addUpdateListener {
-//            companyNameTv.textSize = it!!.animatedValue as Float
-//        }
-//        val animatorSet = AnimatorSet()
-//        animatorSet.play(scaleToZeroAnimation).with(fadeAnimation)
-//        animatorSet.duration = 2000
-//        animatorSet.addListener(object : Animator.AnimatorListener {
-//            override fun onAnimationRepeat(p0: Animator?) {
-//            }
-//
-//            override fun onAnimationCancel(p0: Animator?) {
-//
-//            }
-//
-//            override fun onAnimationStart(p0: Animator?) {
-//            }
-//
-//            override fun onAnimationEnd(p0: Animator?) {
-//                openWebActivity(url)
-//            }
-//
-//        })
-//        animatorSet.start()
     }
 
     override fun hideLoadingCompany() {
