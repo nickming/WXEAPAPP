@@ -85,12 +85,8 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
         val cookies = arrayListOf(token, sid)
         //第一套解决方案
-        L(sid, "handle")
-        L(token, "handle")
         try {
             CookieHelper.setCookie(mMode == MODE_INDEX, "cloud.wy800.com", cookies, this)
-//            AgentWebConfig.syncCookie("cloud.wy800.com", token)
-//            AgentWebConfig.syncCookie("cloud.wy800.com", sid)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -166,7 +162,16 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
     }
 
     override fun onGoBack(payLoad: PayLoad) {
-        mAgentWeb.back()
+        if (!mAgentWeb.back()) {
+            when (mMode) {
+                MODE_INDEX -> {
+                    moveTaskToBack(false)
+                }
+                else -> {
+                    finish()
+                }
+            }
+        }
     }
 
     override fun onShowImagePicker(payLoad: PayLoad) {

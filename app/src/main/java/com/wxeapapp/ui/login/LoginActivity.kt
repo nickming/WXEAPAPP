@@ -13,6 +13,7 @@ import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.View
+import com.google.gson.Gson
 import com.tencent.android.tpush.XGPushConfig
 import com.wxeapapp.R
 import com.wxeapapp.api.request.LoginResponse
@@ -240,20 +241,28 @@ class LoginActivity : BaseActivity(), LoginContract.View {
 
     override fun jumpToWeb(loginResponse: LoginResponse) {
         EventBus.getDefault().postSticky(loginResponse)
-        val addressUrl = SPUtil.get(this, SPUtil.SWITCH_SYSTEM_TYPE_URL, "") as String
-        if (addressUrl.isBlank() && loginResponse.data.size > 1) {
-            showSwitchSystem()
-        } else {
-            var baseUrl: String = ""
-            if (loginResponse!!.data.size == 1) {
-                SPUtil.put(this, SPUtil.COMPANY_NAME, loginResponse.data[0].RegShortName)
-                baseUrl = loginResponse.data[0].ArgFullAddress
-            } else if (addressUrl.isNotBlank()) {
-                baseUrl = addressUrl
+        var addressUrl: String = ""
+        var lastResJson: String = SPUtil.get(applicationContext, SPUtil.LAST_RESPONSE, "") as String
+        if (lastResJson.isNotBlank()) {
+            var lastRes = Gson().fromJson(lastResJson, LoginResponse::class.java)
+            if (lastRes.data.size != loginResponse.data.size) {
+                hideLoadingCompany()
+                SPUtil.clear(applicationContext)
+            } else {
+                val lastIndex: Int = SPUtil.get(applicationContext, SPUtil.LAST_SYSTEM_INDEX, -1) as Int
+                addressUrl = loginResponse.data[lastIndex].ArgFullAddress
+                showLoadingAnimation(loginResponse.data[lastIndex].RegShortName, addressUrl)
             }
-            val name = SPUtil.get(this, SPUtil.COMPANY_NAME, "") as String
-            showLoadingAnimation(name, baseUrl)
 
+        } else {
+            SPUtil.put(applicationContext, SPUtil.LAST_RESPONSE, Gson().toJson(loginResponse, LoginResponse::class.java))
+            if (loginResponse.data.size == 1) {
+                addressUrl = loginResponse.data[0].ArgFullAddress
+                SPUtil.put(applicationContext, SPUtil.LAST_SYSTEM_INDEX, 0)
+                showLoadingAnimation(loginResponse.data[0].RegShortName, addressUrl)
+            } else {
+                showSwitchSystem()
+            }
         }
     }
 
