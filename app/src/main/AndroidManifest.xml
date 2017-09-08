@@ -23,11 +23,21 @@
     <application
         android:name=".EAPApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher"
+        android:roundIcon="@drawable/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppThemeBase">
+
+        <meta-data
+            android:name="com.taobao.android.hotfix.IDSECRET"
+            android:value="24607787-1" />
+        <meta-data
+            android:name="com.taobao.android.hotfix.APPSECRET"
+            android:value="b9037d8afad807cd2acf9ac49171bd68" />
+        <meta-data
+            android:name="com.taobao.android.hotfix.RSASECRET"
+            android:value="MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCWXHuexLzNLybB2500O7zrRYv6ru7ofJYTwAaEJXDPIX1OxzYU+p1NSwszfhheQb2BG1xP8QlUUNdMtG9q0jI8rICqyBmBKyTUSR1KuPPZ7Xck6BuceYcwI+mkPcYTC1Itxezs4GsZMdVpfGMcEdhY9nMRh6Xy6YFmeB4IWFxh5hmogl+EwYNZiys6dlbAHJkPz7bpsY4AKGNwfbSwhoHWO9wd3IJB7Pw/Boild34DcWgUyliQJ8VTS2ymuzPalPjPf0a2WP19nvYah6Zy6NnRHSZbDbx+LRHPg921FkJ8quaFYihG6F2MdlpGbko93S0njGZWa/YCOtp8BY6yxHj1AgMBAAECggEBAI1L51dxpcJjdtZhnD8DjCrDNiGi1htfSGDS6MyxqmrbG7g1+BqKz9tck/AVpKyetohmv77X0V6MgWYxgSou0Mq3iEn0tBLwCjH7ay1W1MCMKJRkEd5fTaztcpfG/SXUU6tz/Ysz8TDB5by1CSXNlzMylTt573Zv/AvhAMfy0Q2lDK+d0tkoEFvyflYoYsKlsCJ48oPfmgHP0GTodeG9gAe4qmzdbWVcx+6FqqSJVma4BBavIFT2VBsAFUX2MUBg1nrMyO/jiZWhJytaSX9zxZeqJVmkRj3Pe9fMVUoHNbqI0uowB0hoqcoRY/uhIYtDzfI+H4ENr7rk8w7uWoSjRhkCgYEA2uZqhaR0wX/B1c1rIeVm8jgoTqw1yDKsCVU1UcN91euBvS+y5C+3Wo4ixgYXeEK59AUkkIIKNkBckkI89k4aq0tMggG/jPOv32gEWCzX02zMenJLhVaO5u7W7DGQKSgD85GQnymAOsIpKZMWpnt6Cwh4Wrr9yuUSyPsx8zg/b68CgYEAr9hSUYvJ3Kl24wMEiQAE4HrR7VINAMgZa2d03n1ilXcVD/wFnDsFJlZF+vZ8HlPXG60zktkOMwMeq/HEmfwrmDckj8MFfk0d9zHv+BAfa3Q8mSvZzTKmrpnX2GN9UiFOIQnnXGcS2JjKDTjnVcJ7PNUtuh7yOfFh+P7L3qPORpsCgYEAsoFBjnfcqkqHg9U+ruaGe7Gl1PoD5ZzEw9uTXni/remd4+v4wrHSoGrWGouvKeeoAkELXzhcIX98vdx8IBLzFoqR+lZ4oPW7jsAhAtKWsZfAa3227iX25IUSCIwmVhmGl2I2AET0h3X74SZMSzjX/hVLKBniikkhd3m4cvGEcYsCgYAEsgwQrWDoiYXpLe1zExMOQ3lTkvtR6AX1vj96qXJ2d0WStbIYp+LNUURxHR/XV3nI/WkBJNaiOhUZlk0fp4IqgF5zkEuXQcvpC+ZSg2uzXNk5ZdhdCFs3EliXKKDyDn2dmDwbVY1FR18t1zUmLxlHWJHuBGGHdpCdK4CaI1mgvQKBgB9lvWLQB8Vz8tuWk3Lk/KMQPhqcIskgS7c0gwzMGJ3mBocFpeapWJYoV5WlyOyJe24m9pufxQNIEQ6A5MQGAcNJmiUmmikoS84qSZhxoXLkKbVv6A5YsF2XdgdTk2SoJ8jalb/1GYa/qX8LCEKa2IcWDLvr68NrdnxM5EcQr/1v" />
 
         <!-- 信鸽 -->
         <activity

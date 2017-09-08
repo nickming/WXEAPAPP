@@ -34,6 +34,10 @@ public class SPUtil {
 
     public static final String COMPANY_NAME = "COMPANY_NAME";
 
+    public static final String LAST_RESPONSE = "LAST_RESPONSE";
+
+    public static final String LAST_SYSTEM_INDEX = "LAST_SYSTEM_INDEX";
+
     /**
      * 保存数据的方法，我们需要拿到保存数据的具体类型，然后根据类型调用不同的保存方法
      */
