@@ -28,7 +28,6 @@
         android:roundIcon="@drawable/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppThemeBase">
-
         <meta-data
             android:name="com.taobao.android.hotfix.IDSECRET"
             android:value="24607787-1" />
