@@ -1,6 +1,8 @@
 package com.wxeapapp.ui.login
 
 import android.app.Dialog
+import android.app.NotificationManager
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -11,6 +13,7 @@ import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.View
+import com.google.gson.Gson
 import com.tencent.android.tpush.XGPushConfig
 import com.wxeapapp.R
 import com.wxeapapp.api.request.LoginResponse
@@ -38,7 +41,6 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-//        applyStatusBar(Color.parseColor("#000000"), 0.3f)
         swipeBackLayout.setEnableGesture(false)
         val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
@@ -48,6 +50,12 @@ class LoginActivity : BaseActivity(), LoginContract.View {
         }
         requestAllPermission()
         initViews()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val notifyManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notifyManager.cancelAll()
     }
 
     override fun autoLogin() {
@@ -233,20 +241,28 @@ class LoginActivity : BaseActivity(), LoginContract.View {
 
     override fun jumpToWeb(loginResponse: LoginResponse) {
         EventBus.getDefault().postSticky(loginResponse)
-        val addressUrl = SPUtil.get(this, SPUtil.SWITCH_SYSTEM_TYPE_URL, "") as String
-        if (addressUrl.isBlank() && loginResponse.data.size > 1) {
-            showSwitchSystem()
-        } else {
-            var baseUrl: String = ""
-            if (loginResponse!!.data.size == 1) {
-                SPUtil.put(this, SPUtil.COMPANY_NAME, loginResponse.data[0].RegShortName)
-                baseUrl = loginResponse.data[0].ArgFullAddress
-            } else if (addressUrl.isNotBlank()) {
-                baseUrl = addressUrl
+        var addressUrl: String = ""
+        var lastResJson: String = SPUtil.get(applicationContext, SPUtil.LAST_RESPONSE, "") as String
+        if (lastResJson.isNotBlank()) {
+            var lastRes = Gson().fromJson(lastResJson, LoginResponse::class.java)
+            if (lastRes.data.size != loginResponse.data.size) {
+                hideLoadingCompany()
+                SPUtil.clear(applicationContext)
+            } else {
+                val lastIndex: Int = SPUtil.get(applicationContext, SPUtil.LAST_SYSTEM_INDEX, -1) as Int
+                addressUrl = loginResponse.data[lastIndex].ArgFullAddress
+                showLoadingAnimation(loginResponse.data[lastIndex].RegShortName, addressUrl)
             }
-            val name = SPUtil.get(this, SPUtil.COMPANY_NAME, "") as String
-            showLoadingAnimation(name, baseUrl)
 
+        } else {
+            SPUtil.put(applicationContext, SPUtil.LAST_RESPONSE, Gson().toJson(loginResponse, LoginResponse::class.java))
+            if (loginResponse.data.size == 1) {
+                addressUrl = loginResponse.data[0].ArgFullAddress
+                SPUtil.put(applicationContext, SPUtil.LAST_SYSTEM_INDEX, 0)
+                showLoadingAnimation(loginResponse.data[0].RegShortName, addressUrl)
+            } else {
+                showSwitchSystem()
+            }
         }
     }
 
@@ -275,31 +291,6 @@ class LoginActivity : BaseActivity(), LoginContract.View {
         companyNameTv.postDelayed({
             openWebActivity(url)
         }, 2000)
-//        val fadeAnimation = ObjectAnimator.ofFloat(companyNameTv, "alpha", 1.0f, 0f)
-//        val scaleToZeroAnimation = ValueAnimator.ofFloat(25f, 0f)
-//        scaleToZeroAnimation.addUpdateListener {
-//            companyNameTv.textSize = it!!.animatedValue as Float
-//        }
-//        val animatorSet = AnimatorSet()
-//        animatorSet.play(scaleToZeroAnimation).with(fadeAnimation)
-//        animatorSet.duration = 2000
-//        animatorSet.addListener(object : Animator.AnimatorListener {
-//            override fun onAnimationRepeat(p0: Animator?) {
-//            }
-//
-//            override fun onAnimationCancel(p0: Animator?) {
-//
-//            }
-//
-//            override fun onAnimationStart(p0: Animator?) {
-//            }
-//
-//            override fun onAnimationEnd(p0: Animator?) {
-//                openWebActivity(url)
-//            }
-//
-//        })
-//        animatorSet.start()
     }
 
     override fun hideLoadingCompany() {
