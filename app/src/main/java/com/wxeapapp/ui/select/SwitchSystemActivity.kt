@@ -37,8 +37,7 @@ class SwitchSystemActivity : BaseActivity() {
         }
         adapter.callback = { view: View, i: Int ->
             EventBus.getDefault().post(CloseEvent(true))
-            SPUtil.put(this, SPUtil.SWITCH_SYSTEM_TYPE_URL, source[i].ArgFullAddress)
-            SPUtil.put(this, SPUtil.COMPANY_NAME, source[i].RegShortName)
+            SPUtil.put(this, SPUtil.LAST_SYSTEM_INDEX, i)
             val intent = Intent(this@SwitchSystemActivity, WebActivity::class.java)
             intent.putExtra(Constant.WEB_MODE, WebActivity.MODE_INDEX)
             intent.putExtra(Constant.PARAM_URL, source[i].ArgFullAddress + Constant.DEFAULT_URL)

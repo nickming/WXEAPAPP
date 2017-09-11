@@ -30,10 +30,6 @@ public class SPUtil {
 
     public static final String TOKEN = "token";
 
-    public static final String SWITCH_SYSTEM_TYPE_URL = "SWITCH_SYSTEM_TYPE_URL";
-
-    public static final String COMPANY_NAME = "COMPANY_NAME";
-
     public static final String LAST_RESPONSE = "LAST_RESPONSE";
 
     public static final String LAST_SYSTEM_INDEX = "LAST_SYSTEM_INDEX";
