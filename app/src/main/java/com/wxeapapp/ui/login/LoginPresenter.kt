@@ -5,9 +5,7 @@ import com.google.gson.Gson
 import com.wxeapapp.EAPApplication
 import com.wxeapapp.api.LoginApi
 import com.wxeapapp.utils.L
-import com.wxeapapp.utils.java.NetWorkUtil
 import com.wxeapapp.utils.java.SPUtil
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import okhttp3.RequestBody
@@ -46,65 +44,47 @@ class LoginPresenter(val mView: LoginContract.View) : LoginContract.Presenter {
 
     }
 
-    fun checkNetwork(): Observable<Boolean> {
-        return Observable.create<Boolean> {
-            val check = NetWorkUtil.isAvailable(EAPApplication.instance)
-            it.onNext(check)
-        }.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-    }
-
     override fun login(map: HashMap<String, String>) {
-        checkNetwork()
-                .subscribe {
-                    if (it) {
-                        var requestStr = Gson().toJson(map)
-                        var requestBody = RequestBody.create(okhttp3.MediaType.parse("application/json;charset=UTF-8"), requestStr)
-                        LoginApi.IMPL.login(requestBody)
-                                .subscribeOn(Schedulers.io())
-                                .doOnSubscribe {
-                                    mView.showStart()
-                                }
-                                .subscribeOn(AndroidSchedulers.mainThread())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe {
-                                    mView.showDone()
-                                    if (it.result == 0) {
-                                        L(it.data[0].ArgFullAddress)
-                                        mView.showLoadingCompany()
-                                        mView.jumpToWeb(it)
-                                    } else {
-                                        mView.hideLoadingCompany()
-                                        mView.showToast("登陆失败")
-                                        SPUtil.clear(EAPApplication.instance)
-                                    }
-                                }
-                    } else {
-                        mView.showToast("暂无网络连接")
-                    }
+        var requestStr = Gson().toJson(map)
+        var requestBody = RequestBody.create(okhttp3.MediaType.parse("application/json;charset=UTF-8"), requestStr)
+        LoginApi.IMPL.login(requestBody)
+                .subscribeOn(Schedulers.io())
+                .doOnSubscribe {
+                    mView.showStart()
                 }
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    mView.showDone()
+                    if (it.result == 0) {
+                        L(it.data[0].ArgFullAddress)
+                        mView.showLoadingCompany()
+                        mView.jumpToWeb(it)
+                    } else {
+                        mView.hideLoadingCompany()
+                        mView.showToast("登陆失败")
+                        SPUtil.clear(EAPApplication.instance)
+                    }
+                }, {
+                    e ->
+                    mView.showToast("网络出错!")
+                    mView.hideLoadingCompany()
+                })
     }
 
     override fun requestVerifyCode(mobile: String) {
-        checkNetwork()
-                .subscribe {
-                    if (it) {
-                        LoginApi.IMPL.getVerifyCode(mobile)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe {
-                                    if (it.result == 0) {
-                                        countDown.start()
-                                    } else {
-                                        mView.showToast(it.errmsg)
-                                    }
-                                }
+        LoginApi.IMPL.getVerifyCode(mobile)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    if (it.result == 0) {
+                        countDown.start()
                     } else {
-                        mView.showToast("暂无网络连接")
+                        mView.showToast(it.errmsg)
                     }
-                }
-
-
+                }, { e ->
+                    mView.showToast("网络出错!")
+                })
     }
 
 
