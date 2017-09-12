@@ -249,7 +249,7 @@ class LoginActivity : BaseActivity(), LoginContract.View {
                 hideLoadingCompany()
                 SPUtil.clear(applicationContext)
             } else {
-                val lastIndex: Int = SPUtil.get(applicationContext, SPUtil.LAST_SYSTEM_INDEX, -1) as Int
+                val lastIndex: Int = SPUtil.get(applicationContext, SPUtil.LAST_SYSTEM_INDEX, 0) as Int
                 addressUrl = loginResponse.data[lastIndex].ArgFullAddress
                 showLoadingAnimation(loginResponse.data[lastIndex].RegShortName, addressUrl)
             }

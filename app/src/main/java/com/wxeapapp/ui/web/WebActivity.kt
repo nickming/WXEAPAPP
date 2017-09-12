@@ -215,7 +215,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                     LoginApi.IMPL.signOut()
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe {
+                            .subscribe({
                                 if (it.result == 0) {
                                     SPUtil.clear(this)
                                     XGPushManager.unregisterPush(this)
@@ -226,7 +226,9 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                                 } else {
                                     toast(it.errmsg)
                                 }
-                            }
+                            }, { e ->
+                                toast("网络出错!")
+                            })
                 })
                 .setNegativeButton("取消", { dialogInterface, i ->
                     dialogInterface.dismiss()
