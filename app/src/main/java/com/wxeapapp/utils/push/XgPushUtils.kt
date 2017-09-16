@@ -29,7 +29,7 @@ object XgPushUtils {
             override fun onSuccess(data: Any?, flag: Int) {
 
                 if (flag == XGPushManager.OPERATION_SUCCESS) {
-                    SPUtil.put(applicationContext, SPUtil.TOKEN, data as String)
+                    SPUtil.put(applicationContext, SPUtil.CLIENT_ID, data as String)
                     success.invoke(data as? String ?: return)
                 }
             }

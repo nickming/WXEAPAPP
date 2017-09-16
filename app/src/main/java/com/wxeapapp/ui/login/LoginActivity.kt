@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.text.Editable
-import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.View
 import com.google.gson.Gson
@@ -61,12 +60,13 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     override fun autoLogin() {
         val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
-        if (!TextUtils.isEmpty(sid) && !TextUtils.isEmpty(token)) {
-            var clientId: String = SPUtil.get(this, SPUtil.TOKEN, "") as String
+        val lastToken = SPUtil.get(this, SPUtil.TOKEN, "") as String
+        var clientId: String = SPUtil.get(this, SPUtil.CLIENT_ID, "") as String
+        if (sid.isNotBlank() && token.isNotBlank() && lastToken.isNotBlank() && clientId.isNotBlank()) {
             if (clientId.isBlank()) {
                 clientId = XGPushConfig.getToken(this)
             }
-            var map = hashMapOf(Pair<String, String>("clientid", clientId))
+            var map = hashMapOf(Pair("clientid", clientId), Pair("token", lastToken))
             mPresenter.login(map)
         }
     }
@@ -241,6 +241,11 @@ class LoginActivity : BaseActivity(), LoginContract.View {
 
     override fun jumpToWeb(loginResponse: LoginResponse) {
         EventBus.getDefault().postSticky(loginResponse)
+
+        if (loginResponse.token != null && loginResponse.token.isNotBlank()) {
+            SPUtil.put(applicationContext, SPUtil.TOKEN, loginResponse.token)
+        }
+
         var addressUrl: String = ""
         var lastResJson: String = SPUtil.get(applicationContext, SPUtil.LAST_RESPONSE, "") as String
         if (lastResJson.isNotBlank()) {

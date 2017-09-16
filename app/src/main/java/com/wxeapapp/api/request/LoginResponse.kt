@@ -11,7 +11,7 @@ import java.io.Serializable
  */
 data class LoginResponse(val result: Int,
                          val errmsg: String,
-                         val token: String,
+                         val token: String?,
                          val data: List<Item>) : Serializable {
 
     data class Item(val AemNo: String,
