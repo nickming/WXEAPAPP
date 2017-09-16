@@ -32,4 +32,6 @@ interface LoginApi {
 
     @GET("wxeap/oapi/Login/Out")
     fun signOut(): Observable<SignOutItem>
+
+
 }
