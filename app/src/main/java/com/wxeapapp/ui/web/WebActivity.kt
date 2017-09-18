@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.TextView
 import com.google.gson.Gson
 import com.just.library.AgentWeb
 import com.tencent.android.tpush.XGPushManager
@@ -16,6 +17,7 @@ import com.wxeapapp.R
 import com.wxeapapp.api.LoginApi
 import com.wxeapapp.api.request.LoginResponse
 import com.wxeapapp.base.BaseActivity
+import com.wxeapapp.base.CloseActivityEvent
 import com.wxeapapp.model.PayLoad
 import com.wxeapapp.ui.login.LoginActivity
 import com.wxeapapp.ui.select.SwitchSystemActivity
@@ -35,6 +37,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_web.*
+import me.drakeet.materialdialog.MaterialDialog
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -54,7 +57,8 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
     var mResponse: LoginResponse? = null
 
 
-    lateinit var mAgentWeb: AgentWeb
+    var mAgentWeb: AgentWeb? = null
+    lateinit var moreDialog: MaterialDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,20 +66,13 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         //源自Stack Overflow解决Android系统bug，全屏模式webview被软键盘遮挡bug
         AndroidBug5497Workaround.assistActivity(findViewById(android.R.id.content))
 
-        try {
-            initViews()
-        } catch (e: Exception) {
-            //如果报错则让应用重启
-            val intent = baseContext.packageManager.getLaunchIntentForPackage(packageName)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-        }
+        initViews()
+
     }
 
 
     private fun initViews() {
         mMode = intent.getIntExtra(Constant.WEB_MODE, MODE_NORMAL)
-
 
         if (intent.getStringExtra(Constant.PARAM_URL) != null) {
             mUrl = intent.getStringExtra(Constant.PARAM_URL)
@@ -111,32 +108,55 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                     .ready()
                     .go(mUrl)
         }
-        mAgentWeb.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
+        mAgentWeb!!.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
 
         if (mMode == MODE_INDEX) {
             webBackIv.visibility = View.GONE
         }
         webBackIv.setOnClickListener {
-            if (!mAgentWeb.back())
+            if (!mAgentWeb!!.back())
                 finish()
+        }
+
+        val dialogView = layoutInflater.inflate(R.layout.layout_dialog, null, false)
+        val refresh: TextView = dialogView.findViewById(R.id.dialogRefreshTv) as TextView
+        refresh.setOnClickListener {
+            mAgentWeb!!.webCreator.get().reload()
+            moreDialog.dismiss()
+        }
+        val exit: TextView = dialogView.findViewById(R.id.dialogExitTv) as TextView
+        exit.setOnClickListener {
+            onLogout(PayLoad("onLogout", null))
+            moreDialog.dismiss()
+        }
+        moreDialog = MaterialDialog(this)
+                .setTitle("更多")
+                .setCanceledOnTouchOutside(true)
+                .setContentView(dialogView)
+                .setNegativeButton("取消", {
+                    moreDialog.dismiss()
+                })
+
+        moreIv.setOnClickListener {
+            moreDialog.show()
         }
     }
 
 
     override fun onResume() {
-        mAgentWeb.webLifeCycle.onResume()
+        mAgentWeb!!.webLifeCycle.onResume()
         super.onResume()
         val notifyManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notifyManager.cancelAll()
     }
 
     override fun onPause() {
-        mAgentWeb.webLifeCycle.onPause()
+        mAgentWeb!!.webLifeCycle.onPause()
         super.onPause()
     }
 
     override fun onDestroy() {
-        mAgentWeb.webLifeCycle.onDestroy()
+        mAgentWeb!!.webLifeCycle.onDestroy()
         super.onDestroy()
     }
 
@@ -158,11 +178,11 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
 
     fun postMessageToWeb(payLoad: PayLoad) {
         val message = Gson().toJson(payLoad)
-        mAgentWeb.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
+        mAgentWeb!!.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
     }
 
     override fun onGoBack(payLoad: PayLoad) {
-        if (!mAgentWeb.back()) {
+        if (!mAgentWeb!!.back()) {
             when (mMode) {
                 MODE_INDEX -> {
                     moveTaskToBack(false)
@@ -219,7 +239,8 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                                 if (it.result == 0) {
                                     SPUtil.clear(this)
                                     XGPushManager.unregisterPush(this)
-                                    mAgentWeb.clearWebCache()
+                                    mAgentWeb!!.clearWebCache()
+                                    EventBus.getDefault().post(CloseActivityEvent())
                                     EventBus.getDefault().removeStickyEvent(LoginResponse::class.java)
                                     startActivity(Intent(this@WebActivity, LoginActivity::class.java))
                                     finish()
@@ -248,7 +269,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                     val item = "data:image/jpeg;base64,$result"
                     val data = PayLoad("onImagePicked", PayLoad.Item(null, null, null, item))
                     val message = Gson().toJson(data, PayLoad::class.java)
-                    mAgentWeb.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
+                    mAgentWeb!!.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
                     it.onNext(true)
                     it.onComplete()
                 }.subscribeOn(Schedulers.io())
@@ -260,7 +281,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
     }
 
     override fun onBackPressed() {
-        if (!mAgentWeb.back()) {
+        if (!mAgentWeb!!.back()) {
             when (mMode) {
                 MODE_INDEX -> {
                     moveTaskToBack(false)

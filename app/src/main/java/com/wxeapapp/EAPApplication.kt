@@ -16,15 +16,16 @@ import com.wxeapapp.utils.push.XgPushUtils
  */
 class EAPApplication : Application() {
 
+
+
     companion object {
         lateinit var instance: Application
+
+
     }
 
     init {
         instance = this
-        //commit1
-        //commit2
-        //commit3
     }
 
     override fun onCreate() {

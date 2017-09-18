@@ -49,6 +49,11 @@ open class BaseActivity : SwipeBackActivity() {
     fun onMessageEvent(messageEvent: MessageEvent) {
 
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun closeSelf(closeActivityEvent: CloseActivityEvent){
+        finish()
+    }
 }
 
 
