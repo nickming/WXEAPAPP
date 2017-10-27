@@ -96,20 +96,20 @@
             app:spinning_bar_padding="6dp"
             app:spinning_bar_width="4dp"/>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        <!--<RelativeLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent">-->
 
-            <TextView
-                android:id="@+id/needHelpTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:layout_marginBottom="16dp"
-                android:text="@string/login_need_help"
-                android:textColor="@color/blue_dark"/>
-        </RelativeLayout>
+            <!--<TextView-->
+                <!--android:id="@+id/needHelpTv"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_alignParentBottom="true"-->
+                <!--android:layout_centerHorizontal="true"-->
+                <!--android:layout_marginBottom="16dp"-->
+                <!--android:text="@string/login_need_help"-->
+                <!--android:textColor="@color/blue_dark"/>-->
+        <!--</RelativeLayout>-->
 
 
     </LinearLayout>

@@ -5,9 +5,11 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
-import android.view.View
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.google.gson.Gson
@@ -58,14 +60,14 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
 
 
     var mAgentWeb: AgentWeb? = null
-    lateinit var moreDialog: MaterialDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
         //源自Stack Overflow解决Android系统bug，全屏模式webview被软键盘遮挡bug
         AndroidBug5497Workaround.assistActivity(findViewById(android.R.id.content))
-
+        toolbar.title = "正在加载中..."
+        setSupportActionBar(toolbar)
         initViews()
 
     }
@@ -78,9 +80,8 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
             mUrl = intent.getStringExtra(Constant.PARAM_URL)
         }
 
-        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
-        val cookies = arrayListOf(token, sid)
+        val cookies = arrayListOf(token)
         //第一套解决方案
         try {
             CookieHelper.setCookie(mMode == MODE_INDEX, "cloud.wy800.com", cookies, this)
@@ -110,35 +111,13 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
         }
         mAgentWeb!!.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
 
-        if (mMode == MODE_INDEX) {
-            webBackIv.visibility = View.GONE
-        }
-        webBackIv.setOnClickListener {
-            if (!mAgentWeb!!.back())
-                finish()
-        }
-
-        val dialogView = layoutInflater.inflate(R.layout.layout_dialog, null, false)
-        val refresh: TextView = dialogView.findViewById(R.id.dialogRefreshTv) as TextView
-        refresh.setOnClickListener {
-            mAgentWeb!!.webCreator.get().reload()
-            moreDialog.dismiss()
-        }
-        val exit: TextView = dialogView.findViewById(R.id.dialogExitTv) as TextView
-        exit.setOnClickListener {
-            onLogout(PayLoad("onLogout", null))
-            moreDialog.dismiss()
-        }
-        moreDialog = MaterialDialog(this)
-                .setTitle("更多")
-                .setCanceledOnTouchOutside(true)
-                .setContentView(dialogView)
-                .setNegativeButton("取消", {
-                    moreDialog.dismiss()
-                })
-
-        moreIv.setOnClickListener {
-            moreDialog.show()
+        if (mMode != MODE_INDEX) {
+            toolbar.setNavigationIcon(R.drawable.ic_arrow_back_dark_24dp)
+            toolbar.setNavigationOnClickListener {
+                if (!mAgentWeb!!.back()) {
+                    finish()
+                }
+            }
         }
     }
 
@@ -168,8 +147,8 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
 
     override fun onTitleUpdate(payLoad: PayLoad) {
         if (payLoad.payload!!.title!!.isNotBlank()) {
-            titleTv.text = payLoad.payload!!.title
-            if (payLoad.payload!!.title.equals("我的") && mResponse?.data!!.size > 1) {
+            toolbar.title = payLoad.payload.title
+            if (payLoad.payload.title.equals("我的") && mResponse?.data!!.size > 1) {
                 val data = PayLoad("showSwitchSystem", null)
                 postMessageToWeb(data)
             }
@@ -291,6 +270,23 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                 }
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.web_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.action_reload -> {
+                mAgentWeb!!.webCreator.get().reload()
+            }
+            R.id.action_logout -> {
+                onLogout(PayLoad("onLogout", null))
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
 }

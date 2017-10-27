@@ -32,16 +32,16 @@ public class WriteCookieInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request.Builder builder = chain.request().newBuilder();
-        String sid = (String) SPUtil.get(mContext, SPUtil.NET_SessionId, "");
+//        String sid = (String) SPUtil.get(mContext, SPUtil.NET_SessionId, "");
         String token = (String) SPUtil.get(mContext, SPUtil.AppCloudToken, "");
         if (!TextUtils.isEmpty(token)) {
             Log.i("handle write cookie", token);
             builder.addHeader("Cookie", token);
         }
-        if (!TextUtils.isEmpty(sid)) {
-            Log.i("handle write cookie", sid);
-            builder.addHeader("Cookie", sid);
-        }
+//        if (!TextUtils.isEmpty(sid)) {
+//            Log.i("handle write cookie", sid);
+//            builder.addHeader("Cookie", sid);
+//        }
         return chain.proceed(builder.build());
     }
 }

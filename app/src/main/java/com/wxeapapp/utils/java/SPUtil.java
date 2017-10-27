@@ -24,7 +24,7 @@ public class SPUtil {
 
     public static final String COOKIE = "cookie";
 
-    public static final String NET_SessionId = "NET_SessionId";
+//    public static final String NET_SessionId = "NET_SessionId";
 
     public static final String AppCloudToken = "AppCloudToken";
 

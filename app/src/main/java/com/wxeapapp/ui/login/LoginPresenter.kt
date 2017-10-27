@@ -45,8 +45,8 @@ class LoginPresenter(val mView: LoginContract.View) : LoginContract.Presenter {
     }
 
     override fun login(map: HashMap<String, String>) {
-        var requestStr = Gson().toJson(map)
-        var requestBody = RequestBody.create(okhttp3.MediaType.parse("application/json;charset=UTF-8"), requestStr)
+        val requestStr = Gson().toJson(map)
+        val requestBody = RequestBody.create(okhttp3.MediaType.parse("application/json;charset=UTF-8"), requestStr)
         LoginApi.IMPL.login(requestBody)
                 .subscribeOn(Schedulers.io())
                 .doOnSubscribe {

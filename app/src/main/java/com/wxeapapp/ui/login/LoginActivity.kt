@@ -41,9 +41,9 @@ class LoginActivity : BaseActivity(), LoginContract.View {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         swipeBackLayout.setEnableGesture(false)
-        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
+//        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
-        if (sid.isNotBlank() && token.isNotBlank()) {
+        if (token.isNotBlank()) {
             transitionRoot.visibility = View.VISIBLE
             KeyboardUtil.hideSoftInput(this)
         }
@@ -58,15 +58,17 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     }
 
     override fun autoLogin() {
-        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
         val lastToken = SPUtil.get(this, SPUtil.TOKEN, "") as String
         var clientId: String = SPUtil.get(this, SPUtil.CLIENT_ID, "") as String
-        if (sid.isNotBlank() && token.isNotBlank() && lastToken.isNotBlank() && clientId.isNotBlank()) {
+        if (token.isNotBlank() && lastToken.isNotBlank()) {
             if (clientId.isBlank()) {
                 clientId = XGPushConfig.getToken(this)
             }
-            var map = hashMapOf(Pair("clientid", clientId), Pair("token", lastToken))
+            val map = hashMapOf<String, String>().apply {
+                put("clientid", clientId)
+                put("token", lastToken)
+            }
             mPresenter.login(map)
         }
     }
@@ -98,9 +100,6 @@ class LoginActivity : BaseActivity(), LoginContract.View {
                     dialogInterface.dismiss()
                 })
                 .create()
-        needHelpTv.setOnClickListener({
-            showHelpDialog()
-        })
 
 
         loginRootLl.setOnTouchListener { view, motionEvent ->
@@ -156,13 +155,15 @@ class LoginActivity : BaseActivity(), LoginContract.View {
                 var mobile = mobileEt.text.toString()
                 var code = verifyCodeEt.text.toString()
                 var token = XGPushConfig.getToken(application)
-                var map = hashMapOf(Pair<String, String>("mobile", mobile), Pair<String, String>("code", code), Pair<String, String>("clientid", token))
+                val map = hashMapOf<String, String>().apply {
+                    put("mobile", mobile)
+                    put("code", code)
+                    put("clientid", token)
+                }
                 mPresenter.login(map)
             } else {
                 toast("信息不完整")
             }
-
-
         })
     }
 
