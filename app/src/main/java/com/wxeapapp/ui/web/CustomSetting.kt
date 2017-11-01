@@ -4,6 +4,8 @@ import android.os.Build
 import android.webkit.WebView
 import com.just.library.AgentWebSettings
 import com.just.library.WebDefaultSettingsManager
+import com.wxeapapp.EAPApplication
+import com.wxeapapp.utils.VersionUtil
 
 /**
  * class description here
@@ -16,7 +18,7 @@ class CustomSetting : WebDefaultSettingsManager() {
 
     override fun toSetting(webView: WebView?): AgentWebSettings<*> {
         super.toSetting(webView)
-        webSettings.userAgentString = webSettings.userAgentString + " wxeap-app/1.0"
+        webSettings.userAgentString = webSettings.userAgentString + " wxeap-app/${VersionUtil.getVersionName(EAPApplication.instance)}"
 //        getWebSettings().setUserAgent(getWebSettings().userAgentString + " wxeap-app/1.0")
         webSettings.blockNetworkImage = false//是否阻塞加载网络图片  协议http or https
         webSettings.allowFileAccess = false //允许加载本地文件html  file协议, 这可能会造成不安全 , 建议重写关闭
