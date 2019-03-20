@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.text.Editable
-import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.View
 import com.google.gson.Gson
@@ -42,9 +41,9 @@ class LoginActivity : BaseActivity(), LoginContract.View {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         swipeBackLayout.setEnableGesture(false)
-        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
+//        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
-        if (sid.isNotBlank() && token.isNotBlank()) {
+        if (token.isNotBlank()) {
             transitionRoot.visibility = View.VISIBLE
             KeyboardUtil.hideSoftInput(this)
         }
@@ -59,14 +58,17 @@ class LoginActivity : BaseActivity(), LoginContract.View {
     }
 
     override fun autoLogin() {
-        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
-        if (!TextUtils.isEmpty(sid) && !TextUtils.isEmpty(token)) {
-            var clientId: String = SPUtil.get(this, SPUtil.TOKEN, "") as String
+        val lastToken = SPUtil.get(this, SPUtil.TOKEN, "") as String
+        var clientId: String = SPUtil.get(this, SPUtil.CLIENT_ID, "") as String
+        if (token.isNotBlank() && lastToken.isNotBlank()) {
             if (clientId.isBlank()) {
                 clientId = XGPushConfig.getToken(this)
             }
-            var map = hashMapOf(Pair<String, String>("clientid", clientId))
+            val map = hashMapOf<String, String>().apply {
+                put("clientid", clientId)
+                put("token", lastToken)
+            }
             mPresenter.login(map)
         }
     }
@@ -98,9 +100,6 @@ class LoginActivity : BaseActivity(), LoginContract.View {
                     dialogInterface.dismiss()
                 })
                 .create()
-        needHelpTv.setOnClickListener({
-            showHelpDialog()
-        })
 
 
         loginRootLl.setOnTouchListener { view, motionEvent ->
@@ -156,13 +155,15 @@ class LoginActivity : BaseActivity(), LoginContract.View {
                 var mobile = mobileEt.text.toString()
                 var code = verifyCodeEt.text.toString()
                 var token = XGPushConfig.getToken(application)
-                var map = hashMapOf(Pair<String, String>("mobile", mobile), Pair<String, String>("code", code), Pair<String, String>("clientid", token))
+                val map = hashMapOf<String, String>().apply {
+                    put("mobile", mobile)
+                    put("code", code)
+                    put("clientid", token)
+                }
                 mPresenter.login(map)
             } else {
                 toast("信息不完整")
             }
-
-
         })
     }
 
@@ -241,6 +242,11 @@ class LoginActivity : BaseActivity(), LoginContract.View {
 
     override fun jumpToWeb(loginResponse: LoginResponse) {
         EventBus.getDefault().postSticky(loginResponse)
+
+        if (loginResponse.token != null && loginResponse.token.isNotBlank()) {
+            SPUtil.put(applicationContext, SPUtil.TOKEN, loginResponse.token)
+        }
+
         var addressUrl: String = ""
         var lastResJson: String = SPUtil.get(applicationContext, SPUtil.LAST_RESPONSE, "") as String
         if (lastResJson.isNotBlank()) {
@@ -249,7 +255,7 @@ class LoginActivity : BaseActivity(), LoginContract.View {
                 hideLoadingCompany()
                 SPUtil.clear(applicationContext)
             } else {
-                val lastIndex: Int = SPUtil.get(applicationContext, SPUtil.LAST_SYSTEM_INDEX, -1) as Int
+                val lastIndex: Int = SPUtil.get(applicationContext, SPUtil.LAST_SYSTEM_INDEX, 0) as Int
                 addressUrl = loginResponse.data[lastIndex].ArgFullAddress
                 showLoadingAnimation(loginResponse.data[lastIndex].RegShortName, addressUrl)
             }

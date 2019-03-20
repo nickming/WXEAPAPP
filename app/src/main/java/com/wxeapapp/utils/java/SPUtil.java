@@ -24,11 +24,13 @@ public class SPUtil {
 
     public static final String COOKIE = "cookie";
 
-    public static final String NET_SessionId = "NET_SessionId";
+//    public static final String NET_SessionId = "NET_SessionId";
 
     public static final String AppCloudToken = "AppCloudToken";
 
     public static final String TOKEN = "token";
+
+    public static final String CLIENT_ID = "clientId";
 
     public static final String LAST_RESPONSE = "LAST_RESPONSE";
 

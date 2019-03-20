@@ -22,8 +22,7 @@ class SwitchSystemActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_selection)
-//        applyStatusBar(Color.parseColor("#000000"), 0.3f)
-        swipeBackLayout.setEnableGesture(false)
+//        swipeBackLayout.setEnableGesture(false)
         back.setOnClickListener { finish() }
     }
 

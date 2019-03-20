@@ -5,10 +5,13 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
-import android.view.View
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.LinearLayout
+import android.widget.TextView
 import com.google.gson.Gson
 import com.just.library.AgentWeb
 import com.tencent.android.tpush.XGPushManager
@@ -16,6 +19,7 @@ import com.wxeapapp.R
 import com.wxeapapp.api.LoginApi
 import com.wxeapapp.api.request.LoginResponse
 import com.wxeapapp.base.BaseActivity
+import com.wxeapapp.base.CloseActivityEvent
 import com.wxeapapp.model.PayLoad
 import com.wxeapapp.ui.login.LoginActivity
 import com.wxeapapp.ui.select.SwitchSystemActivity
@@ -35,6 +39,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_web.*
+import me.drakeet.materialdialog.MaterialDialog
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -54,36 +59,29 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
     var mResponse: LoginResponse? = null
 
 
-    lateinit var mAgentWeb: AgentWeb
+    var mAgentWeb: AgentWeb? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
         //源自Stack Overflow解决Android系统bug，全屏模式webview被软键盘遮挡bug
         AndroidBug5497Workaround.assistActivity(findViewById(android.R.id.content))
+        toolbar.title = "正在加载中..."
+        setSupportActionBar(toolbar)
+        initViews()
 
-        try {
-            initViews()
-        } catch (e: Exception) {
-            //如果报错则让应用重启
-            val intent = baseContext.packageManager.getLaunchIntentForPackage(packageName)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-        }
     }
 
 
     private fun initViews() {
         mMode = intent.getIntExtra(Constant.WEB_MODE, MODE_NORMAL)
 
-
         if (intent.getStringExtra(Constant.PARAM_URL) != null) {
             mUrl = intent.getStringExtra(Constant.PARAM_URL)
         }
 
-        val sid = SPUtil.get(this, SPUtil.NET_SessionId, "") as String
         val token = SPUtil.get(this, SPUtil.AppCloudToken, "") as String
-        val cookies = arrayListOf(token, sid)
+        val cookies = arrayListOf(token)
         //第一套解决方案
         try {
             CookieHelper.setCookie(mMode == MODE_INDEX, "cloud.wy800.com", cookies, this)
@@ -111,32 +109,33 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                     .ready()
                     .go(mUrl)
         }
-        mAgentWeb.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
+        mAgentWeb!!.jsInterfaceHolder.addJavaObject("android", AndroidInterface(this))
 
-        if (mMode == MODE_INDEX) {
-            webBackIv.visibility = View.GONE
-        }
-        webBackIv.setOnClickListener {
-            if (!mAgentWeb.back())
-                finish()
+        if (mMode != MODE_INDEX) {
+            toolbar.setNavigationIcon(R.drawable.ic_arrow_back_dark_24dp)
+            toolbar.setNavigationOnClickListener {
+                if (!mAgentWeb!!.back()) {
+                    finish()
+                }
+            }
         }
     }
 
 
     override fun onResume() {
-        mAgentWeb.webLifeCycle.onResume()
+        mAgentWeb!!.webLifeCycle.onResume()
         super.onResume()
         val notifyManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notifyManager.cancelAll()
     }
 
     override fun onPause() {
-        mAgentWeb.webLifeCycle.onPause()
+        mAgentWeb!!.webLifeCycle.onPause()
         super.onPause()
     }
 
     override fun onDestroy() {
-        mAgentWeb.webLifeCycle.onDestroy()
+        mAgentWeb!!.webLifeCycle.onDestroy()
         super.onDestroy()
     }
 
@@ -148,8 +147,8 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
 
     override fun onTitleUpdate(payLoad: PayLoad) {
         if (payLoad.payload!!.title!!.isNotBlank()) {
-            titleTv.text = payLoad.payload!!.title
-            if (payLoad.payload!!.title.equals("我的") && mResponse?.data!!.size > 1) {
+            toolbar.title = payLoad.payload.title
+            if (payLoad.payload.title.equals("我的") && mResponse?.data!!.size > 1) {
                 val data = PayLoad("showSwitchSystem", null)
                 postMessageToWeb(data)
             }
@@ -158,11 +157,11 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
 
     fun postMessageToWeb(payLoad: PayLoad) {
         val message = Gson().toJson(payLoad)
-        mAgentWeb.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
+        mAgentWeb!!.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
     }
 
     override fun onGoBack(payLoad: PayLoad) {
-        if (!mAgentWeb.back()) {
+        if (!mAgentWeb!!.back()) {
             when (mMode) {
                 MODE_INDEX -> {
                     moveTaskToBack(false)
@@ -215,18 +214,21 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                     LoginApi.IMPL.signOut()
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe {
+                            .subscribe({
                                 if (it.result == 0) {
                                     SPUtil.clear(this)
                                     XGPushManager.unregisterPush(this)
-                                    mAgentWeb.clearWebCache()
+                                    mAgentWeb!!.clearWebCache()
+                                    EventBus.getDefault().post(CloseActivityEvent())
                                     EventBus.getDefault().removeStickyEvent(LoginResponse::class.java)
                                     startActivity(Intent(this@WebActivity, LoginActivity::class.java))
                                     finish()
                                 } else {
                                     toast(it.errmsg)
                                 }
-                            }
+                            }, { e ->
+                                toast("网络出错!")
+                            })
                 })
                 .setNegativeButton("取消", { dialogInterface, i ->
                     dialogInterface.dismiss()
@@ -246,7 +248,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                     val item = "data:image/jpeg;base64,$result"
                     val data = PayLoad("onImagePicked", PayLoad.Item(null, null, null, item))
                     val message = Gson().toJson(data, PayLoad::class.java)
-                    mAgentWeb.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
+                    mAgentWeb!!.jsEntraceAccess.quickCallJs("getMessageFromAndroid", message)
                     it.onNext(true)
                     it.onComplete()
                 }.subscribeOn(Schedulers.io())
@@ -258,7 +260,7 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
     }
 
     override fun onBackPressed() {
-        if (!mAgentWeb.back()) {
+        if (!mAgentWeb!!.back()) {
             when (mMode) {
                 MODE_INDEX -> {
                     moveTaskToBack(false)
@@ -268,6 +270,23 @@ class WebActivity : BaseActivity(), IWebActionDelegate {
                 }
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.web_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.action_reload -> {
+                mAgentWeb!!.webCreator.get().reload()
+            }
+            R.id.action_logout -> {
+                onLogout(PayLoad("onLogout", null))
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
 }

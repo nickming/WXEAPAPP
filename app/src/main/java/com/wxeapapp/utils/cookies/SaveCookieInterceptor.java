@@ -36,10 +36,10 @@ public class SaveCookieInterceptor implements Interceptor {
         if (!originalResponse.headers("Set-Cookie").isEmpty()) {
             for (String header : originalResponse.headers("Set-Cookie")) {
                 String cookie = header.toString();
-                if (cookie.contains(SPUtil.NET_SessionId)) {
-                    Log.i("handle save_sid:", cookie);
-                    SPUtil.put(context, SPUtil.NET_SessionId, cookie);
-                }
+//                if (cookie.contains(SPUtil.NET_SessionId)) {
+//                    Log.i("handle save_sid:", cookie);
+//                    SPUtil.put(context, SPUtil.NET_SessionId, cookie);
+//                }
                 if (cookie.contains(SPUtil.AppCloudToken)) {
                     Log.i("handle save_token:", cookie);
                     SPUtil.put(context, SPUtil.AppCloudToken, cookie);
